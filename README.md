@@ -1,5 +1,18 @@
 # tcpdump-trace-analyzer
 
+This is only used for analyzing TCP packet.
+### How to get raw data and processedData?
+Step1: Taking your own trace(Ubuntu):
+``` 
+    tcpdump -w [output filename]
+    Press control-c to stop recording.
+```
+Step2: Firlter trace file
+```
+    tcpdump -r [input trace filename] --number -n 'tcp' > [output filename]
+```
+
+```
 ### Utilization
 
 Two kind of utilization 

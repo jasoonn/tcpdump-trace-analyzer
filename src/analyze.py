@@ -70,6 +70,7 @@ if __name__ == '__main__':
 
 
     elif args.getIPPair:
+        print("Get IP pair above threshold.")
         outputFile = open(args.outputFile, 'w', newline='')
         logArr = []
         #Process data

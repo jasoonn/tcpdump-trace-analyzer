@@ -8,6 +8,7 @@ class Packet():
             self.parseSeq()
             self.parseAck()
             self.parseSend_and_RecvIP()
+            self.len = int(self.line[self.line.rfind("length")+7:])
             return True
         except Exception as e:
             return False
@@ -32,6 +33,9 @@ class Packet():
     
     def getAck(self):
         return self.ack
+
+    def getLen(self):
+        return self.len
             
     
     def parseDate(self):
@@ -84,34 +88,32 @@ class Packet():
                 raise("error")
             IP = IP[IP.find('.')+1:]
         int(IP)
-        self.sendIP = self.sender[:self.sender.rfind(".")]
-        self.recvIP = self.recv[:self.recv.rfind(".")]
+    
 
     #Check the pair is in the line
     def checkIP(self, IP1, IP2):
         if IP1 !=None and IP2!= None:
-            if self.sendIP ==IP1 and self.recvIP == IP2:
+            if self.sender.find(IP1) == 0 and self.recv.find(IP2) == 0:
                 return True
-            elif self.sendIP ==IP2 and self.recvIP == IP1:
+            elif self.sender.find(IP2) == 0 and self.recv.find(IP1) == 0:
                 return True
             else:
                 return False
         elif IP1 !=None:
-            if self.sendIP ==IP1 or self.recvIP == IP1:
+            if self.sender.find(IP1) == 0 or self.recv.find(IP1) == 0:
                 return True
             else:
                 return False
         elif IP2!=None:
-            if self.sendIP ==IP2 or self.recvIP == IP2:
+            if self.sender.find(IP2) == 0 or self.recv.find(IP2) == 0:
                 return True
             else:
                 return False
         else:
             return True
 
-    #checkWhether IP1 is sender, IP2 is receiver
-    def checkIPStern(self, IP1, IP2):
-        if self.sendIP ==IP1 and self.recvIP == IP2:
-            return True
-        else:
-            return False
+if __name__ == '__main__':
+    line = " 2283  16:22:22.251248 21476718us tsft -92dBm noise antenna 1 5785 MHz 11a ht/20 User 0 MCS 1 LDPC FEC 80 MHz short GI IP 192.168.1.11.51020 > 130.211.14.80.443: Flags [.], seq 4075:5443, ack 10257, win 1024, options [nop,nop,TS val 1664686985 ecr 1738227912], length 1368"
+    packet = Packet(line)
+    packet.process()
+    print(packet.checkIP("192.168.1.11", "130.211"))

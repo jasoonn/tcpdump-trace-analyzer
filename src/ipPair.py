@@ -1,6 +1,6 @@
 import csv
 from functools import cmp_to_key
-from Packet import Packet
+from packet import packet
 from utils import portCompare, nonePortCompare
 
 class ipPair():
@@ -33,6 +33,11 @@ class ipPair():
                         continue
                 else:
                     self.logArr.append([sender, recv, time, time, 1])
+        if self.port:
+            self.compare = portCompare
+        else:
+            self.compare = nonePortCompare
+        self.logArr = sorted(self.logArr, key=cmp_to_key(self.compare))
 
     def getLogArr(self):
         return self.logArr
@@ -43,11 +48,6 @@ class ipPair():
             outputFile = open(self.outputFileName, 'w', newline='')
             writer = csv.writer(outputFile)
             writer.writerow(["FirstIP", "SecondIP", "First", "Second", "# recv"])
-            if self.port:
-                compare = portCompare
-            else:
-                compare = nonePortCompare
-            self.logArr = sorted(self.logArr, key=cmp_to_key(compare))
 
             for i in self.logArr:
                 if i[4]>int(self.ths):
@@ -73,7 +73,7 @@ class ipPair():
                 tmp = self.logArr[i][0]
                 self.logArr[i][0] = self.logArr[i][1]
                 self.logArr[i][1] = tmp
-            self.logArr = sorted(self.logArr, key=cmp_to_key(compare))
+            self.logArr = sorted(self.logArr, key=cmp_to_key(self.compare))
             for i in self.logArr:
                 if i[0]!= prev:
                     if buffer>int(self.ths):

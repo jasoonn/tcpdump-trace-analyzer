@@ -1,4 +1,4 @@
-class Packet():
+class packet():
     def __init__(self, line):
         self.line = line
 
@@ -91,7 +91,7 @@ class Packet():
     
 
     #Check the pair is in the line
-    def checkIP(self, IP1, IP2):
+    def checkIP(self, IP1, IP2 = None):
         if IP1 !=None and IP2!= None:
             if self.sender.find(IP1) == 0 and self.recv.find(IP2) == 0:
                 return True
@@ -114,6 +114,7 @@ class Packet():
 
 if __name__ == '__main__':
     line = " 2283  16:22:22.251248 21476718us tsft -92dBm noise antenna 1 5785 MHz 11a ht/20 User 0 MCS 1 LDPC FEC 80 MHz short GI IP 192.168.1.11.51020 > 130.211.14.80.443: Flags [.], seq 4075:5443, ack 10257, win 1024, options [nop,nop,TS val 1664686985 ecr 1738227912], length 1368"
-    packet = Packet(line)
+    packet = packet(line)
     packet.process()
-    print(packet.checkIP("192.168.1.11", "130.211"))
+    print(packet.getSeq())
+    print(packet.checkIP("192.168.1.11", "131.211"))

@@ -24,3 +24,4 @@ Two kind of utilization
     This will list all IP communication IP pair, IP interact 
     python3 analyze.py tr5_2output ./oct5_2/IP_pair.csv --getIPPair --N 300 --subnet 192.168.1
 
+python3 analyze.py ../processedData/total_tr5 --outputFile ../result/total/cc --N 1500 --subnet 192.168.1

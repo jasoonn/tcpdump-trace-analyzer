@@ -13,16 +13,19 @@ from scipy.stats import pearsonr
 
 if __name__ == '__main__':
 
-    #Parse commands
+    ###################   Parse commands   ###################
     args = processCommand()
 
-    #Parse data
-    #  python3 analyze.py ../processedData/total_tr5 --outputFile ../result/total/cc --N 1500 --subnet 192.168.1
-    #  Start 1330 finish 4500
-    #  0 2 3 4 8 13
+    ###################   Parse data   ###################
+    #  Record data from 1330 to 4500
     (inputFile, faultLineNum, packets, baseTime) = parsePacket(args.inputFile, 1330, 4500)
+    #Print fail number
+    if args.printFault:
+        for index, i in enumerate(process_Fail(faultLineNum)):
+            print(index+1, i)
+    
 
-    # Basic print packets Count
+    ###################   Basic print packets Count   ###################
     print("Total packets count:", len(packets))
     count = 0
     for i in packets:
@@ -31,26 +34,33 @@ if __name__ == '__main__':
     print("Poke count:", count)
 
 
-    #Get IP pair information
+    ###################   Get IP pair information   ###################
     thisIPpair = ipPair(packets, args.outputFile, args.subnet, args.port, args.N) 
     logArr = thisIPpair.getLogArr()
 
-    #Get analysis IP pair
-    (desiredArr, labels) = interact(logArr, args.N) 
+    ###################   Get analysis IP pair(maximum 7)   ###################
+    (desiredArr, labels) = interact(logArr, args.N, fix=True)
+    print("Analysis Pair:", desiredArr, labels)
+    labels = ["Player1", "Player2", "Player3", "Player4", "Player5", "Player6"] 
+    print("Modified Analysis Pair:", desiredArr, labels)
     colors = ['b', 'g', 'r', 'k', 'm', 'c', 'y']
 
-    #Different class initialization
+    ###################   Different class initialization: Uncomment if you need it   ###################
     #objRTT = rtt(packets, baseTime, desiredArr, args.outputFile, colors, labels)
     #objPacketLen = packetLen(packets, desiredArr, args.outputFile, colors, labels, baseTime, True)
     #objInterArrival = interArrival(packets, desiredArr, args.outputFile, colors, labels, baseTime)
     objBW = bw(packets, baseTime, desiredArr, args.outputFile, colors, labels)
-    #Process RTT overall part 
-    #objRTT.processServer("130.211.14.80")
 
-    ######  Process Pokemon Go Traffic
+    ###################   Plot Overall BW   ###################
+    objBW.plotTimeSeries(0, 3500, 1)
+    sys.exit()
+    objBW.plotTimeSeries(0, 3500, 10)
+    sys.exit()
+    objBW.plotTimeSeries(0, 3500, 30)
+
+    ###################   Process Pokemon Go Traffic  ################### 
     pokemonData = [[["192.168.1.11", "130.211.14.80"], 0, 100000], [["192.168.1.12", "130.211.14.80"], 0, 100000], [["192.168.1.14", "130.211.14.80"], 0, 100000], [["192.168.1.15", "130.211.14.80"], 0, 100000], [["192.168.1.20", "130.211.14.80"], 0, 10000], [["192.168.1.18", "130.211.14.80"], 0, 10000]]
-
-    ###Plot Poke BW
+    #####   Plot Poke BW   #####
     (pokeUploadBW, pokeDownloadBW) = objBW.processSpecificPairs(pokemonData)
     plt.plot([i/1024 for i in range(len(pokeUploadBW))], [k/pokeUploadBW[-1] for k in pokeUploadBW],  color='green', linestyle='dashed', linewidth = 1, label = "Pokemon client bandwidth")
     plt.plot([i/1024 for i in range(len(pokeDownloadBW))], [k/pokeDownloadBW[-1] for k in pokeDownloadBW],  color='red', linestyle='dashed', linewidth = 1, label = "Pokemon server bandwidth")
@@ -60,8 +70,7 @@ if __name__ == '__main__':
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-
-    #Plot Poke interarrival
+    #####   Plot Poke interarrival   #####
     pokeUploadInterArr, pokeUploadPacketNum, pokeDownloadInterArr, pokeDownloadPacketNum = objInterArrival.processSpecificPairs(pokemonData)
     plt.plot([j[0] for j in pokeUploadInterArr], [k[1]/pokeUploadPacketNum for k in pokeUploadInterArr],  color='green', linestyle='dashed', linewidth = 1, label = "Pokemon client packets")
     plt.plot([j[0] for j in pokeDownloadInterArr], [k[1]/pokeDownloadPacketNum for k in pokeDownloadInterArr],  color='red', linestyle='dashed', linewidth = 1, label = "Pokemon server packets")
@@ -72,8 +81,7 @@ if __name__ == '__main__':
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-
-    #Plot Poke packetLen
+    #####   Plot Poke packetLen   #####
     (pokeUploadPacketLen, pokeDownloadPacketLen) = objPacketLen.processSpecificPairs(pokemonData)
     plt.plot(range(len(pokeUploadPacketLen)), [k/pokeUploadPacketLen[-1] for k in pokeUploadPacketLen],  color='green', linestyle='dashed', linewidth = 1, label = "Pokemon client packets")
     plt.plot(range(len(pokeDownloadPacketLen)), [k/pokeDownloadPacketLen[-1] for k in pokeDownloadPacketLen],  color='red', linestyle='dashed', linewidth = 1, label = "Pokemon server packets")
@@ -82,8 +90,7 @@ if __name__ == '__main__':
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-
-    #Plot Poke RTT
+    #####   Plot Poke RTT   #####
     pokeAcc = objRTT.processSpecificPairs(pokemonData)
     plt.plot([i[0] for i in pokeAcc], [k[1] for k in pokeAcc],  color='green', linestyle='dashed', linewidth = 1, label = "Pokemon RTT")
     plt.xlabel('RTT (s)')
@@ -93,29 +100,25 @@ if __name__ == '__main__':
     plt.show()
     sys.exit()
 
-    ######  Process active/inactive players
+
+    ###################   Process active/inactive players   ###################
     activeData= [[["192.168.1.11", "130.211.14.80"], 0, 100000], [["192.168.1.12", "130.211.14.80"], 0, 100000], [["192.168.1.14", "130.211.14.80"], 0, 100000]]
     inactiveData = [[["192.168.1.15", "130.211.14.80"], 0, 100000]]
-
-    #Plot active RTT
+    #####   Plot active/inactive RTT   #####
     activeAcc = objRTT.processSpecificPairs(activeData)
     plt.plot([i[0] for i in activeAcc], [k[1] for k in activeAcc],  color='green', linestyle='dashed', linewidth = 1, label = "Active player RTT")
-    #Plot inactive RTT
     inactiveAcc = objRTT.processSpecificPairs(inactiveData)
     plt.plot([i[0] for i in inactiveAcc], [k[1] for k in inactiveAcc],  color='green', linestyle='solid', linewidth = 1, label = "Inactive player RTT")
-
     plt.xlabel('RTT (s)')
     plt.ylabel('Cumulative distribution function')
     plt.xscale('log')
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-
-    #Plot active packetLen
+    #####   Plot active/inactive packetLen   #####
     (activeUploadPacketLen, activeDownloadPacketLen) = objPacketLen.processSpecificPairs(activeData)
     plt.plot(range(len(activeUploadPacketLen)), [k/activeUploadPacketLen[-1] for k in activeUploadPacketLen],  color='green', linestyle='dashed', linewidth = 1, label = "Active player client packets")
     plt.plot(range(len(activeDownloadPacketLen)), [k/activeDownloadPacketLen[-1] for k in activeDownloadPacketLen],  color='red', linestyle='dashed', linewidth = 1, label = "Active player server packets")
-    #Plot inactive packetLen
     (inactiveUploadPacketLen, inactiveDownloadPacketLen) = objPacketLen.processSpecificPairs(inactiveData)
     plt.plot(range(len(inactiveUploadPacketLen)), [k/inactiveUploadPacketLen[-1] for k in inactiveUploadPacketLen],  color='green', linestyle='solid', linewidth = 1, label = "Inactive player client packets")
     plt.plot(range(len(inactiveDownloadPacketLen)), [k/inactiveDownloadPacketLen[-1] for k in inactiveDownloadPacketLen],  color='red', linestyle='solid', linewidth = 1, label = "Active player server packets")
@@ -124,12 +127,10 @@ if __name__ == '__main__':
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-
-    #Plot active interarrival
+    #####   Plot active/inactive interarrival   #####
     activepUploadInterArr, activeUploadPacketNum, activeDownloadInterArr, activeDownloadPacketNum = objInterArrival.processSpecificPairs(activeData)
     plt.plot([j[0] for j in activepUploadInterArr], [k[1]/activeUploadPacketNum for k in activepUploadInterArr],  color='green', linestyle='dashed', linewidth = 1, label = "Active player client packets")
     plt.plot([j[0] for j in activeDownloadInterArr], [k[1]/activeDownloadPacketNum for k in activeDownloadInterArr],  color='red', linestyle='dashed', linewidth = 1, label = "Active player server packets")
-    #Plot inactive interarrival
     inactiveUploadInterArr, inactiveUploadPacketNum, inactiveDownloadInterArr, inavtiveDownloadPacketNum = objInterArrival.processSpecificPairs(inactiveData)
     plt.plot([j[0] for j in inactiveUploadInterArr], [k[1]/inactiveUploadPacketNum for k in inactiveUploadInterArr],  color='green', linestyle='solid', linewidth = 1, marker='o', markerfacecolor='blue', markersize=0.2, label = "Inactive player client packets")
     plt.plot([j[0] for j in inactiveDownloadInterArr], [k[1]/inavtiveDownloadPacketNum for k in inactiveDownloadInterArr],  color='red', linestyle='solid', linewidth = 1, marker='o', markerfacecolor='red', markersize=0.2, label = "Inactive player server packets")
@@ -139,12 +140,10 @@ if __name__ == '__main__':
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-    
-    ###Plot active BW
+    #####   Plot active/inactive BW   #####
     (activeUploadBW, activeDownloadBW) = objBW.processSpecificPairs(activeData)
     plt.plot([i/1024 for i in range(len(activeUploadBW))], [k/activeUploadBW[-1] for k in activeUploadBW],  color='green', linestyle='dashed', linewidth = 1, label = "Active player client bandwidth")
     plt.plot([i/1024 for i in range(len(activeDownloadBW))], [k/activeDownloadBW[-1] for k in activeDownloadBW],  color='red', linestyle='dashed', linewidth = 1, label = "Active player server bandwidth")
-    ###Plot inactive BW
     (inactiveUploadBW, inactiveDownloadBW) = objBW.processSpecificPairs(inactiveData)
     plt.plot([i/1024 for i in range(len(inactiveUploadBW))], [k/inactiveUploadBW[-1] for k in inactiveUploadBW],  color='green', linestyle='solid', linewidth = 1, label = "Inactive player client bandwidth")
     plt.plot([i/1024 for i in range(len(inactiveDownloadBW))], [k/inactiveDownloadBW[-1] for k in inactiveDownloadBW],  color='red', linestyle='solid', linewidth = 1, label = "Inactive player server bandwidth")
@@ -156,29 +155,24 @@ if __name__ == '__main__':
     sys.exit()
     
 
-    ######  Process startup/steaty state
+    ###################   Process startup/steaty state   ###################
     startupIPData = [[["192.168.1.20", "130.211.14.80"], 850, 1080], [["192.168.1.18", "130.211.14.80"], 197, 1032]]
     steadyStateData = [[["192.168.1.11", "130.211.14.80"], 0, 100000], [["192.168.1.12", "130.211.14.80"], 0, 100000], [["192.168.1.14", "130.211.14.80"], 0, 100000], [["192.168.1.15", "130.211.14.80"], 0, 100000]]
-    
-    #Plot startup RTT
+    #####   Plot startup/steady RTT   #####
     startupAcc = objRTT.processSpecificPairs(startupIPData)
     plt.plot([i[0] for i in startupAcc], [k[1] for k in startupAcc],  color='green', linestyle='dashed', linewidth = 1, label = "Startup state RTT")
-    #Plot steady RTT
     steadyAcc = objRTT.processSpecificPairs(steadyStateData)
     plt.plot([i[0] for i in steadyAcc], [k[1] for k in steadyAcc],  color='green', linestyle='solid', linewidth = 1, label = "Startup state RTT")
-
     plt.xlabel('RTT (s)')
     plt.ylabel('Cumulative distribution function')
     plt.xscale('log')
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-
-    ###Plot startup BW
+    #####   Plot startup/steady BW   #####
     (startupUploadBW, startupDownloadBW) = objBW.processSpecificPairs(startupIPData)
     plt.plot([i/1024 for i in range(len(startupUploadBW))], [k/startupUploadBW[-1] for k in startupUploadBW],  color='green', linestyle='dashed', linewidth = 1, label = "Startup state client bandwidth")
     plt.plot([i/1024 for i in range(len(startupUploadBW))], [k/startupDownloadBW[-1] for k in startupDownloadBW],  color='red', linestyle='dashed', linewidth = 1, label = "Startup state server bandwidth")
-    ###Plot steady BW
     (steadyUploadBW, steadyDownloadBW) = objBW.processSpecificPairs(steadyStateData)
     plt.plot([i/1024 for i in range(len(steadyUploadBW))], [k/steadyUploadBW[-1] for k in steadyUploadBW],  color='green', linestyle='solid', linewidth = 1, label = "Steady state client bandwidth")
     plt.plot([i/1024 for i in range(len(steadyDownloadBW))], [k/steadyDownloadBW[-1] for k in steadyDownloadBW],  color='red', linestyle='solid', linewidth = 1, label = "Steady state server bandwidth")
@@ -189,40 +183,41 @@ if __name__ == '__main__':
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-
-    #Plot startup interarrival
+    #####   Plot startup/steady interarrival   #####
     startupUploadInterArr, startupUploadPacketNum, startupDownloadInterArr, startupDownloadPacketNum = objInterArrival.processSpecificPairs(startupIPData)
     plt.plot([j[0] for j in startupUploadInterArr], [k[1]/startupUploadPacketNum for k in startupUploadInterArr],  color='green', linestyle='dashed', linewidth = 1, label = "Startup state client packets")
     plt.plot([j[0] for j in startupDownloadInterArr], [k[1]/startupDownloadPacketNum for k in startupDownloadInterArr],  color='red', linestyle='dashed', linewidth = 1, label = "Startup state server packets")
-    #Plot steady interarrival
     steadyUploadInterArr, steadyupUploadPacketNum, steadyupDownloadInterArr, steadyupDownloadPacketNum = objInterArrival.processSpecificPairs(steadyStateData)
     plt.plot([j[0] for j in steadyUploadInterArr], [k[1]/steadyupUploadPacketNum for k in steadyUploadInterArr],  color='green', linestyle='solid', linewidth = 1, marker='o', markerfacecolor='blue', markersize=0.2, label = "Steady state client packets")
     plt.plot([j[0] for j in steadyupDownloadInterArr], [k[1]/steadyupDownloadPacketNum for k in steadyupDownloadInterArr],  color='red', linestyle='solid', linewidth = 1, marker='o', markerfacecolor='red', markersize=0.2, label = "Steady state server packets")
-    #plt.plot([j[0] for j in steadyUploadInterArr], [k[1]/steadyupUploadPacketNum for k in steadyUploadInterArr],  color='k', linestyle='solid', linewidth = 1, label = "Steady state client packets")
-    #plt.plot([j[0] for j in steadyupDownloadInterArr], [k[1]/steadyupDownloadPacketNum for k in steadyupDownloadInterArr],  color='m', linestyle='solid', linewidth = 1, label = "Steady state server packets")
     plt.xlabel('Inter-packet arrival time (s)')
     plt.ylabel('Cumulative distribution function')
     plt.xscale('log')
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
-
-    #Plot startup packetLen
+    #####   Plot startup/steady packetLen   #####
     (startupUploadPacketLen, startupDownloadPacketLen) = objPacketLen.processSpecificPairs(startupIPData)
     plt.plot(range(len(startupUploadPacketLen)), [k/startupUploadPacketLen[-1] for k in startupUploadPacketLen],  color='green', linestyle='dashed', linewidth = 1, label = "Startup state client packets")
     plt.plot(range(len(startupDownloadPacketLen)), [k/startupDownloadPacketLen[-1] for k in startupDownloadPacketLen],  color='red', linestyle='dashed', linewidth = 1, label = "Startup state server packets")
-    
-    #Plot steady packetLen
     (steadyUploadPacketLen, steadyDownloadPacketLen) = objPacketLen.processSpecificPairs(steadyStateData)
     plt.plot(range(len(steadyUploadPacketLen)), [k/steadyUploadPacketLen[-1] for k in steadyUploadPacketLen],  color='green', linestyle='solid', linewidth = 1, label = "Steady state client packets")
     plt.plot(range(len(steadyDownloadPacketLen)), [k/steadyDownloadPacketLen[-1] for k in steadyDownloadPacketLen],  color='red', linestyle='solid', linewidth = 1, label = "Steady state server packets")
-    
     plt.xlabel('Packet Length (byte)')
     plt.ylabel('Cumulative distribution function')
     #plt.xscale('log')
     plt.legend(loc="lower right")
     plt.show()
     sys.exit()
+########################################################################################################################################################################################
+###############################################   Above is used for generated the plots in the paper   #################################################################################
+########################################################################################################################################################################################
+
+########################################################################################################################################################################################
+###############################################   Below is some codes for generated other basic plots for pg trace   ###################################################################
+########################################################################################################################################################################################
+
+    ###################   Process ACF   ###################
     # for i in range(0,3500,1000):
     #     objInterArrival.getACF(i,i+1000)
     # for i in desiredArr:
@@ -383,9 +378,6 @@ if __name__ == '__main__':
 
     #Finish write IP pair  
     thisIPpair.close()   
-
-    #Print fail number
-    if args.printFault:
-        for index, i in enumerate(process_Fail(faultLineNum)):
-            print(index+1, i)
     inputFile.close()
+
+    

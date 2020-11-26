@@ -138,7 +138,7 @@ def parseDate(parse):
     return startHr*3600 + startMin*60 + startSec
 
 #Interact with user
-def interact(logArr, ths):
+def interact(logArr, ths, fix):
     index = 0
     possible = []
     valid = False
@@ -147,23 +147,26 @@ def interact(logArr, ths):
             possible.append(i)
             print(index, i[0]+'_'+i[1], i[4])
             index += 1
-    # while (valid == False):
-    #     valid = True
-    #     qInput = input("Choose IP pair to show RTT and distribution(max: 7)?    e.g. 0 2 5 \n")
-    #     try:
-    #         arr = list(map(int, qInput.split(" ")))
-    #     except:
-    #         valid = False
-    #         continue
-    #     if len(arr)>7:
-    #         print("Too much index")
-    #         valid = False
-    #         continue
-    #     for i in arr:
-    #         if i>index-1 or i<0:
-    #             print("Error index!")
-    #             valid = False
-    arr = [0, 2, 3, 4, 8, 13]
+    arr = []
+    if fix == False:
+        while (valid == False):
+            valid = True
+            qInput = input("Choose IP pair to show RTT and distribution(max: 7)?    e.g. 0 2 5 \n")
+            try:
+                arr = list(map(int, qInput.split(" ")))
+            except:
+                valid = False
+                continue
+            if len(arr)>7:
+                print("Too much index")
+                valid = False
+                continue
+            for i in arr:
+                if i>index-1 or i<0:
+                    print("Error index!")
+                    valid = False
+    else:
+        arr = [8, 13, 0, 2, 3, 4]
     candidate = []
     for i in arr:
         candidate.append([possible[i][0],possible[i][1]])

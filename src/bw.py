@@ -25,7 +25,7 @@ class bw:
         avgDownBW = []
         lengthBW = 0
         print("Process Bandwidth")
-        #Process basic paire
+        #Process basic pair
         for IPPair in desiredArr:
             idx = 0
             upCount = 0   #Total Upload Bandwidth
@@ -176,7 +176,7 @@ class bw:
                         times.append([bwUnit[0]-bin, sum/bin])
                         sum = 0
                     sum += bwUnit[1]
-                plt.plot([j[0] for j in times], [j[1] for j in times], color=self.colors[index], linewidth = 1, label = self.labels[index])
+                plt.plot([j[0] for j in times], [j[1] for j in times], color=self.colors[index], linestyle='dashed', linewidth = 1, label = self.labels[index])
             plt.xlim(startTime, endTime)
             #plt.ylim(0, 15000)
             plt.xlabel('Time (s)')
@@ -211,7 +211,7 @@ class bw:
                         times.append([bwUnit[0]-bin, sum/bin])
                         sum = 0
                     sum += bwUnit[1]
-                plt.plot([j[0] for j in times], [j[1] for j in times], color=self.colors[index], linewidth = 1, label = self.labels[index])
+                plt.plot([j[0] for j in times], [j[1] for j in times], color=self.colors[index], linestyle='dashed', linewidth = 1, label = self.labels[index])
             plt.xlim(startTime, endTime)
             #plt.ylim(0, 60000)
             plt.xlabel('Time (s)')

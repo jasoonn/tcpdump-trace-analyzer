@@ -32,7 +32,7 @@ class packetLen:
             downloadTime = []
             upCount = 0
             downCount = 0
-            for i in range(self.maxPacketLenth):
+            for i in range(self.maxPacketLenth+1):
                 lenUploadArr.append(0)
                 lenDownloadArr.append(0)
 
@@ -50,7 +50,7 @@ class packetLen:
                     downCount += 1
                     downloadTime.append([packet.getTime()-baseTime, packet.getLen()])
             #Accumulated
-            for i in range(self.maxPacketLenth-1):
+            for i in range(self.maxPacketLenth):
                 lenUploadArr[i+1] += lenUploadArr[i]
                 lenDownloadArr[i+1] += lenDownloadArr[i]
 
@@ -70,7 +70,7 @@ class packetLen:
             lenDownloadArr = []
             upSizeCount = 0
             downSizeCount = 0
-            for i in range(self.maxPacketLenth):
+            for i in range(self.maxPacketLenth+1):
                 lenUploadArr.append(0)
                 lenDownloadArr.append(0)
             for IPPair in desiredArr:
@@ -86,7 +86,7 @@ class packetLen:
                         lenDownloadArr[packet.getLen()] +=1
                         downSizeCount += packet.getLen()
              #Accumulated
-            for i in range(self.maxPacketLenth-1):
+            for i in range(self.maxPacketLenth):
                 lenUploadArr[i+1] += lenUploadArr[i]
                 lenDownloadArr[i+1] += lenDownloadArr[i]
             print("")
